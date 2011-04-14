@@ -1,8 +1,10 @@
 """
 texparse.py: parse TeX line
 """
-from string import ascii_letters
+from string import ascii_letters, digits
+ALNUMS = ascii_letters + digits
 SPACES = " \t"
+
 def spaces(s, i):
     r"""
     >>> spaces("  a", 0)
@@ -26,6 +28,8 @@ def term(s, i):
     ('\\aaa', 4)
     >>> term(r"\{aaa", 0)
     ('{', 2)
+    >>> term(r"a1b", 0)
+    ('a1b', 3)
     """
     start = i
     escaped = False # T when \ appeared
@@ -40,7 +44,7 @@ def term(s, i):
             if i != start:
                 break
             escaped = True
-        elif s[i] in ascii_letters:
+        elif s[i] in ALNUMS:
             if escaped: escaped = False
         else:
             if i != start: break
@@ -94,6 +98,15 @@ def parse(s, i=0):
     """
     tokens, i = parse_tokens(s, 0)
     return tokens
+
+
+def unparse(xs, top=False):
+    if isinstance(xs, str):
+        return xs
+    s = "".join(map(unparse, xs))
+    if top: return s
+    return "{%s}" % s
+
 
 def _test():
     import doctest
