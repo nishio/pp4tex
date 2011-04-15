@@ -1,19 +1,40 @@
 """
 texparse.py: parse TeX line
 """
-from string import ascii_letters
-SPACES = " \t"
+from string import ascii_letters, digits
+ALNUMS = ascii_letters + digits
+SPACES = " \t\r\n"
+
 def spaces(s, i):
     r"""
     >>> spaces("  a", 0)
     ('  ', 2)
     """
     start = i
-    while s[i] in SPACES:
+    while i < len(s):
+        if s[i] not in SPACES: break
         i += 1
     return (s[start:i], i)
 
+def hash(s, i):
+    """
+    parse '#123' for macro with arguments 
+    >>> hash("#123", 0)
+    ('#123', 4)
+    >>> hash("#12a", 0)
+    ('#12', 3)
+    """
+    assert s[i] == "#"
+    start = i
+    i += 1
+    while i < len(s):
+        if s[i] in digits:
+            i += 1
+        else:
+            break
 
+    return (s[start:i], i)
+    
 def term(s, i):
     r"""
     >>> term("aaa", 0)
@@ -26,7 +47,14 @@ def term(s, i):
     ('\\aaa', 4)
     >>> term(r"\{aaa", 0)
     ('{', 2)
+    >>> term(r"a1b", 0) # intentionally differ from TeX
+    ('a1b', 3)
+    >>> term(r"#1 ", 0) 
+    ('#1', 2)
     """
+    if s[i] == "#":
+        return hash(s, i)
+
     start = i
     escaped = False # T when \ appeared
     while i < len(s):
@@ -40,7 +68,7 @@ def term(s, i):
             if i != start:
                 break
             escaped = True
-        elif s[i] in ascii_letters:
+        elif s[i] in ALNUMS:
             if escaped: escaped = False
         else:
             if i != start: break
@@ -90,10 +118,20 @@ def parse(s, i=0):
     ['{', 'aaa', '}']
     >>> parse(r"\frac{x^2}{2} + x")
     ['\\frac', ['x', '^', '2'], ['2'], ' ', '+', ' ', 'x']
-
+    >>> parse(r"#1 + #2")
+    ['#1', ' ', '+', ' ', '#2']
     """
     tokens, i = parse_tokens(s, 0)
     return tokens
+
+
+def unparse(xs, top=False):
+    if isinstance(xs, str):
+        return xs
+    s = "".join(map(unparse, xs))
+    if top: return s
+    return "{%s}" % s
+
 
 def _test():
     import doctest
