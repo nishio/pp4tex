@@ -158,11 +158,23 @@ def main():
     fi = open(target)
     fo = open(outfile, "w")
 
+    in_multiline_def = False
     lno = 0
     while True:
         line = fi.readline()
-        if not line: break
+        if not line:
+            if in_multiline_def:
+                raise RuntimeError("multiline definition '%s' is incomplete" % frm)                
+            break
         lno += 1
+
+        if in_multiline_def:
+            if DEFINE_END_PAT.match(line):
+                in_multiline_def = False
+                ns.set(frm, MultiLineDef(body, args))
+                continue
+            body.append(line)
+            continue
 
         is_command = process_single_line_command(line, lno)
         if is_command: continue
@@ -172,16 +184,7 @@ def main():
             frm, args =  m.groups()
             assert_is_single_token(**locals())
             body = []
-            while True:
-                line = fi.readline()
-                if not line:
-                    raise RuntimeError("multiline definition '%s' is incomplete" % frm)
-                lno += 1
-                if DEFINE_END_PAT.match(line):
-                    break
-                body.append(line)
-            
-            ns.set(frm, MultiLineDef(body, args))
+            in_multiline_def = True
             continue
 
         line = subst(line, ns)
