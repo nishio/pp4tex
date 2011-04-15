@@ -39,7 +39,7 @@ ns = Namespace()
 PUSH_PAT = re.compile("\s*%\s*push")
 POP_PAT = re.compile("\s*%\s*pop")
 DEFINE_PAT = re.compile("\s*%\s*define ([^[\s]+)(?:\[(\d+)\])?\s+(.+)")
-DEFINE_ML_PAT = re.compile("\s*%\s*define ([^[\s]+)(?:\[(\d+)\])?:")
+DEFINE_ML_PAT = re.compile("\s*%\s*define ([^[\s:]+)(?:\[(\d+)\])?:")
 DEFINE_END_PAT = re.compile("\s*%\s*end")
 
 
