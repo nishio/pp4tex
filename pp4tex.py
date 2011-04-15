@@ -147,6 +147,26 @@ def process_single_line_command(line, lno=0):
         assert_is_single_token(**locals())
         ns.set(frm, SingleLineDef(to, arg))
         return True
+
+
+class LineFeeder(object):
+    def __init__(self, path):
+        self.stack = [file(path)]
+        self.lineno = [0]
+    def push(self, fi):
+        self.stack.append(fi)
+    def get_lineno(self):
+        return self.lineno[-1]
+    def __iter__(self):
+        while self.stack:
+            line = self.stack[-1].readline()
+            self.lineno[-1] += 1
+            if not line:
+                self.stack.pop()
+                self.lineno.pop()
+            else:
+                yield line
+        raise StopIteration
     
 
 def main():
@@ -155,19 +175,11 @@ def main():
     trunk, ext = os.path.splitext(fn)
     target = os.path.join(path, "%s.%s" % (trunk, "tex"))
     outfile = os.path.join(path, "pp_%s.%s" % (trunk, "tex"))
-    fi = open(target)
+    lines = LineFeeder(target)
     fo = open(outfile, "w")
 
     in_multiline_def = False
-    lno = 0
-    while True:
-        line = fi.readline()
-        if not line:
-            if in_multiline_def:
-                raise RuntimeError("multiline definition '%s' is incomplete" % frm)                
-            break
-        lno += 1
-
+    for line in lines:
         if in_multiline_def:
             if DEFINE_END_PAT.match(line):
                 in_multiline_def = False
@@ -176,13 +188,13 @@ def main():
             body.append(line)
             continue
 
-        is_command = process_single_line_command(line, lno)
+        is_command = process_single_line_command(line, lines.get_lineno())
         if is_command: continue
 
         m = DEFINE_ML_PAT.match(line)
         if m:
             frm, args =  m.groups()
-            assert_is_single_token(**locals())
+            assert_is_single_token(frm, lines.get_lineno())
             body = []
             in_multiline_def = True
             continue
@@ -190,5 +202,7 @@ def main():
         line = subst(line, ns)
         fo.write(line)
 
+    if in_multiline_def:
+        raise RuntimeError("multiline definition '%s' is incomplete" % frm)                
 
 main()
