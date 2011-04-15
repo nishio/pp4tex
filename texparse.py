@@ -3,7 +3,7 @@ texparse.py: parse TeX line
 """
 from string import ascii_letters, digits
 ALNUMS = ascii_letters + digits
-SPACES = " \t"
+SPACES = " \t\r\n"
 
 def spaces(s, i):
     r"""
