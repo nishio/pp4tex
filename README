@@ -1,6 +1,14 @@
+Best Practice
+1: To override existing word are usually BAD.
+  for example:
+    % define S \mat{\Sigma}
+    % define \mu \vec{\mu}
+  Rationale: you can't use original S and \mu in the namespace.
+  Exception: if it is in very small scope and you are confident it doesn't harm, it's OK.
+
+
 
 History
-
 
 2011-04-13
 TeX用のプリプロセッサを作ってみた
