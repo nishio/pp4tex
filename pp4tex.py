@@ -78,17 +78,14 @@ class MultiLineDef(object):
         
         tmp_ns = Namespace(parent=ns)
         for j in range(self.args):
-            tmp_ns.set("#%d" % (j + 1), (tree[i], None))
+            tmp_ns.set("#%d" % (j + 1), SingleLineDef(tree[i], None))
             i += 1
 
         body = []
-        print "*"*10, ns
         for line in self.body:
-            print line
             is_command = process_single_line_command(line)
             if is_command: continue
-            body.expand(subst(line, tmp_ns))
-        print "*"*10, ns
+            body.extend(subst(line, tmp_ns))
         return i, body
 
         
