@@ -33,6 +33,7 @@ POP_PAT = re.compile("\s*%\s*pop")
 DEFINE_PAT = re.compile("\s*%\s*define ([^[\s]+)(?:\[(\d+)\])?\s+(.+)")
 DEFINE_ML_PAT = re.compile("\s*%\s*define ([^[\s:]+)(?:\[(\d+)\])?:")
 DEFINE_END_PAT = re.compile("\s*%\s*end")
+INCLUDE_PAT = re.compile("\s*%\s*include (.+)")
 
 
 class SingleLineDef(object):
@@ -153,10 +154,14 @@ class LineFeeder(object):
     def __init__(self, path):
         self.stack = [file(path)]
         self.lineno = [0]
-    def push(self, fi):
-        self.stack.append(fi)
+
+    def push(self, path):
+        self.stack.append(file(path))
+        self.lineno.append(0)
+
     def get_lineno(self):
         return self.lineno[-1]
+
     def __iter__(self):
         while self.stack:
             line = self.stack[-1].readline()
@@ -190,6 +195,12 @@ def main():
 
         is_command = process_single_line_command(line, lines.get_lineno())
         if is_command: continue
+
+        m = INCLUDE_PAT.match(line)
+        if m:
+            filename = m.groups()[0].strip()
+            filename = os.path.join(path, filename) # relative path from target file
+            lines.push(filename)
 
         m = DEFINE_ML_PAT.match(line)
         if m:
