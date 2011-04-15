@@ -13,7 +13,6 @@ import texparse
 target = sys.argv[1]
 path, fn = os.path.split(target)
 trunk, ext = os.path.splitext(fn)
-
 target = os.path.join(path, "%s.%s" % (trunk, "tex"))
 outfile = os.path.join(path, "pp_%s.%s" % (trunk, "tex"))
 fi = open(target)
@@ -40,7 +39,9 @@ top = ns
 
 PUSH_PAT = re.compile("\s*%\s*push")
 POP_PAT = re.compile("\s*%\s*pop")
-DEFINE_PAT = re.compile("\s*%\s*define ([^[\s]+)(?:\[(\d+)\])?\s+(.*)")
+DEFINE_PAT = re.compile("\s*%\s*define ([^[\s]+)(?:\[(\d+)\])?\s+(.+)")
+DEFINE_ML_PAT = re.compile("\s*%\s*define ([^[\s]+)(?:\[(\d+)\])?:")
+DEFINE_END_PAT = re.compile("\s*%\s*end")
 
 def traverse(tree, ns):
     new_tree = []
@@ -78,26 +79,28 @@ def subst(s, ns):
     s = texparse.unparse(new_tree, True)
     return s
 
+def main():
+    for lno, line in enumerate(fi):
+        if PUSH_PAT.match(line):
+            ns = Namespace(parent=ns)
+            continue
+        if POP_PAT.match(line):
+            ns = ns.parent
+            continue
+        m = DEFINE_PAT.match(line)
+        if m:
+            frm, arg, to =  m.groups()
+            fs = texparse.parse(frm)
+            if len(fs) != 1:
+                raise RuntimeError(
+                    "line %d: key '%s' should have only one token but has %s" %
+                    (lno + 1, frm, fs))
 
-for lno, line in enumerate(fi):
-    if PUSH_PAT.match(line):
-        ns = Namespace(parent=ns)
-        continue
-    if POP_PAT.match(line):
-        ns = ns.parent
-        continue
-    m = DEFINE_PAT.match(line)
-    if m:
-        frm, arg, to =  m.groups()
-        fs = texparse.parse(frm)
-        if len(fs) != 1:
-            raise RuntimeError(
-                "line %d: key '%s' should have only one token but has %s" %
-                (lno + 1, frm, fs))
-                
-        ns.set(frm, (subst(to, ns), arg))
-        continue
+            ns.set(frm, (subst(to, ns), arg))
+            continue
 
-    line = subst(line, ns)
-    fo.write(line)
+        line = subst(line, ns)
+        fo.write(line)
 
+
+main()
