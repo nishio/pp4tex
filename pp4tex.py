@@ -2,8 +2,8 @@
 pp4tex
 preprocessor for TeX
 usage: python pp4tex.py foobar.tex && platex foobat_pp.tex
-
 """
+
 import sys
 import os
 import re
@@ -33,6 +33,7 @@ class Namespace(dict):
 
     def set(self, key, value):
         self[key] = value
+
 
 ns = Namespace()
 PUSH_PAT = re.compile("\s*%\s*push")
