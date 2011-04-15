@@ -11,7 +11,8 @@ def spaces(s, i):
     ('  ', 2)
     """
     start = i
-    while s[i] in SPACES:
+    while i < len(s):
+        if s[i] not in SPACES: break
         i += 1
     return (s[start:i], i)
 
