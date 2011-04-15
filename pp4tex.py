@@ -66,22 +66,37 @@ class SingleLineDef(object):
 
 class MultiLineDef(object):
     def __init__(self, body, args):
-        self.body = [subst(line, ns) for line in body]
+        self.body = []
+        for line in body:
+            is_command = process_single_line_command(line)
+            if is_command:
+                self.body.append(line) # don't substitute
+            else:
+                self.body.append(subst(line, ns))
+
         if args:
             self.args = int(args)
         else:
             self.args = 0
 
-    def eval(self):
+    def eval(self, tree, i):
         if not self.args:
-            return self.body
+            return i, self.body
         
         tmp_ns = Namespace(parent=ns)
         for j in range(self.args):
             tmp_ns.set("#%d" % (j + 1), (tree[i], None))
             i += 1
 
-        return i, subst(body, tmp_ns)
+        body = []
+        print "*"*10, ns
+        for line in self.body:
+            print line
+            is_command = process_single_line_command(line)
+            if is_command: continue
+            body.expand(subst(line, tmp_ns))
+        print "*"*10, ns
+        return i, body
 
         
 def traverse(tree, ns):
@@ -121,25 +136,25 @@ def assert_is_single_token(frm, lno, **kw):
             (lno + 1, frm, fs))
             
 
-def process_single_line_command(lno, line):
-    "returns to_continue?"
+def process_single_line_command(line, lno=0):
+    "returns is_command?"
     global ns
+    if not isinstance(line, str):
+        raise AssertionError("str required, given %s" % line)
     if PUSH_PAT.match(line):
         ns = Namespace(parent=ns)
-        return
+        return True
 
     if POP_PAT.match(line):
         ns = ns.parent
-        return
+        return True
     
     m = DEFINE_PAT.match(line)
     if m:
         frm, arg, to =  m.groups()
         assert_is_single_token(**locals())
         ns.set(frm, SingleLineDef(to, arg))
-        return
-
-    return True
+        return True
     
 
 def main():
@@ -149,12 +164,12 @@ def main():
         if not line: break
         lno += 1
 
-        to_cont = process_single_line_command(lno, line)
-        if not to_cont: continue
+        is_command = process_single_line_command(line, lno)
+        if is_command: continue
 
         m = DEFINE_ML_PAT.match(line)
         if m:
-            frm, arg =  m.groups()
+            frm, args =  m.groups()
             assert_is_single_token(**locals())
             body = []
             while True:
