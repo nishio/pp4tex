@@ -1,0 +1,20 @@
+\documentclass[a4paper]{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+% include tiny.tex
+
+% define \E[1] \mathbb{E}[#1]
+Here is macro with arguments: $\E{x}$
+
+% push
+  % define \E \vec{E}
+  You can indent. You can re-define macros.
+  $\E{x}$
+% pop
+
+And you can back to the general definition. $\E{x}$
+
+\hello{ It come from tiny.tex! }
+
+\end{document}

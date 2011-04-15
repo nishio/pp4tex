@@ -1,0 +1,27 @@
+History
+
+2011-04-13
+TeX用のプリプロセッサを作ってみた
+http://d.hatena.ne.jp/nishiohirokazu/20110413/1302662414
+
+TeX用のパーサを書いてみた
+http://d.hatena.ne.jp/nishiohirokazu/20110413/1302698997
+
+
+2011-04-14
+TeXの識別子で悩む
+http://d.hatena.ne.jp/nishiohirokazu/20110414/1302765428
+
+置換に関して
+http://d.hatena.ne.jp/nishiohirokazu/20110414/1302766410
+
+TeX用プリプロセッサをgithubに置いた
+http://d.hatena.ne.jp/nishiohirokazu/20110414/1302792834
+
+
+2011-04-15
+pp4tex: 引数を取るマクロを定義できるようになった
+http://d.hatena.ne.jp/nishiohirokazu/20110415/1302833161
+
+pp4tex: 複数行マクロが動くようになった - 西尾泰和のはてなダイアリー
+http://d.hatena.ne.jp/nishiohirokazu/20110415/1302879430

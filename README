@@ -1,4 +1,44 @@
+=============================
+pp4tex - preprocessor for TeX
+=============================
+
+TeX already has own 'user definition' command, \newcommand and \renewcommand.
+However it doesn't have several features in modern programming language.
+- You must be aware the name already defined or not.
+- It is a global variable. You must be aware your \renewcommand is safe or not.
+- You can't use digits in the name of command.
+
+So, I introduced nestable, lexical scope system on TeX
+
+
+Quick Reference
+---------------
+
+% define \Z \mathbb{Z}
+  simple macro
+
+% define \E[1] \mathbb{E}[#1]
+  with arguments
+
+% push
+  start new scope
+% pop
+  exit scope
+
+% define \Foo:
+  here is multiline macro
+  push/pop, oneline define are available
+% end
+  end of multiline macro
+
+% include filepath
+  insert from file
+
+Look sample/small.tex
+
 Best Practice
+-------------
+
 1: To override existing word are usually BAD.
   for example:
     % define S \mat{\Sigma}
@@ -6,23 +46,3 @@ Best Practice
   Rationale: you can't use original S and \mu in the namespace.
   Exception: if it is in very small scope and you are confident it doesn't harm, it's OK.
 
-
-
-History
-
-2011-04-13
-TeX用のプリプロセッサを作ってみた
-http://d.hatena.ne.jp/nishiohirokazu/20110413/1302662414
-
-TeX用のパーサを書いてみた
-http://d.hatena.ne.jp/nishiohirokazu/20110413/1302698997
-
-2011-04-14
-TeXの識別子で悩む
-http://d.hatena.ne.jp/nishiohirokazu/20110414/1302765428
-
-置換に関して
-http://d.hatena.ne.jp/nishiohirokazu/20110414/1302766410
-
-TeX用プリプロセッサをgithubに置いた
-http://d.hatena.ne.jp/nishiohirokazu/20110414/1302792834
