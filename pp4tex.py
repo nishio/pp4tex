@@ -10,14 +10,6 @@ import re
 
 import texparse
 
-target = sys.argv[1]
-path, fn = os.path.split(target)
-trunk, ext = os.path.splitext(fn)
-target = os.path.join(path, "%s.%s" % (trunk, "tex"))
-outfile = os.path.join(path, "pp_%s.%s" % (trunk, "tex"))
-fi = open(target)
-fo = open(outfile, "w")
-
 class Namespace(dict):
     def __init__(self, parent=None, **kw):
         super(Namespace, self).__init__(**kw)
@@ -158,6 +150,14 @@ def process_single_line_command(line, lno=0):
     
 
 def main():
+    target = sys.argv[1]
+    path, fn = os.path.split(target)
+    trunk, ext = os.path.splitext(fn)
+    target = os.path.join(path, "%s.%s" % (trunk, "tex"))
+    outfile = os.path.join(path, "pp_%s.%s" % (trunk, "tex"))
+    fi = open(target)
+    fo = open(outfile, "w")
+
     lno = 0
     while True:
         line = fi.readline()
