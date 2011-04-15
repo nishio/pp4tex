@@ -120,28 +120,36 @@ def assert_is_single_token(frm, lno, **kw):
             (lno + 1, frm, fs))
             
 
-def main():
+def process_single_line_command(lno, line):
+    "returns to_continue?"
     global ns
+    if PUSH_PAT.match(line):
+        ns = Namespace(parent=ns)
+        return
+
+    if POP_PAT.match(line):
+        ns = ns.parent
+        return
+    
+    m = DEFINE_PAT.match(line)
+    if m:
+        frm, arg, to =  m.groups()
+        assert_is_single_token(**locals())
+        ns.set(frm, SingleLineDef(to, arg))
+        return
+
+    return True
+    
+
+def main():
     lno = 0
     while True:
         line = fi.readline()
         if not line: break
         lno += 1
 
-        if PUSH_PAT.match(line):
-            ns = Namespace(parent=ns)
-            continue
-
-        if POP_PAT.match(line):
-            ns = ns.parent
-            continue
-
-        m = DEFINE_PAT.match(line)
-        if m:
-            frm, arg, to =  m.groups()
-            assert_is_single_token(**locals())
-            ns.set(frm, SingleLineDef(to, arg))
-            continue
+        to_cont = process_single_line_command(lno, line)
+        if not to_cont: continue
 
         m = DEFINE_ML_PAT.match(line)
         if m:
