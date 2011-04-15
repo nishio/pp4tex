@@ -40,19 +40,35 @@ top = ns
 
 PUSH_PAT = re.compile("\s*%\s*push")
 POP_PAT = re.compile("\s*%\s*pop")
-DEFINE_PAT = re.compile("\s*%\s*define ([^\s]+)\s+(.*)")
-
+DEFINE_PAT = re.compile("\s*%\s*define ([^[\s]+)(?:\[(\d+)\])?\s+(.*)")
 
 def traverse(tree, ns):
     new_tree = []
-    for item in tree:
+    i = 0
+    while i < len(tree):
+        item = tree[i]
+        i += 1
         if isinstance(item, list):
-            new_item = [traverse(item, ns)]
+            new_tree.append(traverse(item, ns))
         else:
             new_item = ns.get(item)
             if not new_item:
-                new_item = [item]
-        new_tree.extend(new_item)
+                new_tree.append(item)
+            else:
+                body, arg = new_item
+                if arg == None:
+                    new_tree.extend(body)
+                else:
+                    # with argument
+                    num = int(arg)
+                    ns = Namespace(parent=ns)
+                    for j in range(num):
+                        ns.set("#%d" % (j + 1), (tree[i], None))
+                        i += 1
+
+                    new_tree.extend(subst(body, ns))
+                    ns = ns.parent
+
     return new_tree
 
 
@@ -72,14 +88,14 @@ for lno, line in enumerate(fi):
         continue
     m = DEFINE_PAT.match(line)
     if m:
-        frm, to =  m.groups()
+        frm, arg, to =  m.groups()
         fs = texparse.parse(frm)
         if len(fs) != 1:
             raise RuntimeError(
                 "line %d: key '%s' should have only one token but has %s" %
                 (lno + 1, frm, fs))
                 
-        ns.set(frm, subst(to, ns))
+        ns.set(frm, (subst(to, ns), arg))
         continue
 
     line = subst(line, ns)

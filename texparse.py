@@ -15,7 +15,25 @@ def spaces(s, i):
         i += 1
     return (s[start:i], i)
 
+def hash(s, i):
+    """
+    parse '#123' for macro with arguments 
+    >>> hash("#123", 0)
+    ('#123', 4)
+    >>> hash("#12a", 0)
+    ('#12', 3)
+    """
+    assert s[i] == "#"
+    start = i
+    i += 1
+    while i < len(s):
+        if s[i] in digits:
+            i += 1
+        else:
+            break
 
+    return (s[start:i], i)
+    
 def term(s, i):
     r"""
     >>> term("aaa", 0)
@@ -28,9 +46,14 @@ def term(s, i):
     ('\\aaa', 4)
     >>> term(r"\{aaa", 0)
     ('{', 2)
-    >>> term(r"a1b", 0)
+    >>> term(r"a1b", 0) # intentionally differ from TeX
     ('a1b', 3)
+    >>> term(r"#1 ", 0) 
+    ('#1', 2)
     """
+    if s[i] == "#":
+        return hash(s, i)
+
     start = i
     escaped = False # T when \ appeared
     while i < len(s):
@@ -94,7 +117,8 @@ def parse(s, i=0):
     ['{', 'aaa', '}']
     >>> parse(r"\frac{x^2}{2} + x")
     ['\\frac', ['x', '^', '2'], ['2'], ' ', '+', ' ', 'x']
-
+    >>> parse(r"#1 + #2")
+    ['#1', ' ', '+', ' ', '#2']
     """
     tokens, i = parse_tokens(s, 0)
     return tokens
