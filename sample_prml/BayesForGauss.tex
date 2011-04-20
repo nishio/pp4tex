@@ -1,0 +1,26 @@
+% define \BayesForGauss:
+
+% define \x \vec{x}
+% define \y \vec{y}
+% define \A \mat{A}
+% define \b \vec{b}
+% define \m \vec{\mu}
+% define \Lam \mat{\Lambda}
+% define \L \mat{L}
+
+\begin{itembox}[l]{ガウス分布についてのベイズの定理(PRML p.90)}
+% push
+% define \S \mat{\Sigma}
+
+given:
+\[ p(\x) = \Gauss{\x | \m, \Lam\inv } \]
+\[ p(\y|\x) = \Gauss{\y | \A\x + \b, \L\inv } \]
+marginal and conditional distributions are:
+\[ p(\y) = \Gauss{\y| \A\m + \b, \L\inv + \A \Lam\inv \A^T } \]
+\[ p(\x|\y) = \Gauss{\x | \S (\A^T \L (\y - \b) + \Lam \m), \S\inv} \]
+where
+\[ \S = (\Lam + \A^T \L \A)\inv \]
+
+% pop
+\end{itembox}
+% end

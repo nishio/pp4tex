@@ -1,0 +1,156 @@
+\documentclass[a4paper]{jsarticle}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{color}
+\usepackage{ascmac}
+
+% global commands
+\newcommand{\inv}{^{-1}}
+\newcommand{\Gauss}[1]{\mathcal{N}(#1)}
+
+% global macros
+% define \vec[1] {\bm #1}
+% define \mat[1] {\bm #1}
+
+\begin{document}
+
+\title{PRML3.3}
+\author{サイボウズ・ラボ 西尾泰和}
+
+% define \x \vec{x}
+% define \y \vec{y}
+% define \w \vec{w}
+% define \t \vec{t}
+
+% include BayesForGauss.tex
+
+
+\section{PRML3.3.1}
+% push
+% define \m0 \vec{m_0}
+% define \S0 \mat{S_0}
+
+モデルパラメータ$\w$の事前分布を適当に決めてベイズ的なアプローチをしたい。
+尤度関数が$\exp(-x^2)$の形なので、同じ形のガウス分布を事前分布にすれば形がキープされてうれしい。
+
+そこで事前分布をガウス分布としよう。
+\[ p(\w) = \Gauss{\w | \m0, \S0}\]
+
+$\exp$の中だけに注目すると ($x \to y$は$x = a \exp ( {1 \over 2} y )$の意味で独自に使っている)
+\[ p(\w) \to (\w - \m0)^T \S0\inv (\w - \m0) \]
+
+尤度関数は
+\[ p(\t | \w, \x) = \prod_n \Gauss{t_n | \w^T \phi(\x_n), \beta\inv} \]
+
+$\exp$の中だけに注目すると
+\[ p(\t | \w, \x) \to \beta \sum_n (t_n - \w^T \phi(\x_n))^2  \]
+
+ベイズの定理より(念のため: 独立だから $p(\w) = p(\w | \x)$)
+\[ p(\w | \t, \x) \propto p(\t | \x, \w) p(\w)\]
+
+\begin{boxnote}
+よって$p(\w | \t, \x)$の$\exp$の中身だけ考えると
+\[ p(\w | \t, \x) \to \beta \sum_n \{ (t_n - \w^T \phi(\x_n))^2 \} + (\w - \m0)^T \S0\inv (\w - \m0)\]
+
+展開して$\w$の二次の項、一次の項で整理してみよう。($\phi$ が $Phi$ に変わるところは前回やったけどやっぱわかりにくいな、今度書いておこう。)
+
+\[ \beta\t^T\t -\beta\t^t Phi \w  -\beta Phi^T \w^T \t + \beta\w^T Phi^T Phi \w
++ 
+\w^T \S0\inv\w
+- \m0^T \S0\inv\w
+- \w^T \S0\inv \m0
++ \m0^T \S0\inv \m0
+\]
+
+各項がスカラーなので転置しても良いことと$\S0$が対称行列なので転置しても同じ形であることを使って整理して
+\[ \w^T(\S0\inv + \beta Phi^T Phi) \w - 2 \w^T (\S0\inv \m0 +\beta Phi^T \t)  + const\]
+
+これで3.50, 3.51が示された
+\end{boxnote}
+
+このやり方の他にも、直接ガウス分布についてのベイズの定理を使う方法もある。
+
+\BayesForGauss
+
+\[ p(\w) = \Gauss{\w | \m0, \S0}\]
+\[ p(\t | \w, \x) = \prod_n \Gauss{t_n | \w^T \phi(\x_n), \beta\inv} 
+= \Gauss{\t | \Phi\w, \beta\inv \mat{I}}\]
+\[ \x \to \w, \m \to \m0, \Lam \to \S0\inv, \y \to \t, \A = \Phi, \b \to \vec{0}, \L \to \beta \mat{I} \]
+so
+\eq3p49
+where
+\[ \Sn\inv = \S0\inv + \Phi^T \beta \mat{I} \Phi = \S0\inv + \beta \Phi^T \Phi \]
+\[ \mn = \Sn(\Phi^T \beta \mat{I} \t + \S0\inv \m0) =  \Sn(\S0\inv \m0 + \beta \Phi^T \t)\]
+
+
+% pop
+
+\section{PRML3.3.2}
+% push
+% define \newt \hat{t}
+% define \newx \vec{x}_{N+1}
+
+実際問題として重みベクトルとか求めたいわけじゃなくて、新しい$\newx$が与えられたときにそれに対応する値$\newt$を推測したいってことの方が多い。だから$\w$を積分消去してしまおう。
+
+っと思ったが実は積分消去しないでも$\w$を消す方法がある。p.90で行ったガウス変数に対するベイズの定理を使うのである。ベイズの定理を使えば$p(\x)$と$p(\y|\x)$から$p(\y)$を求める、つまり$\x$を消すことができる。
+
+まずガウス分布についてのベイズの定理を思い出す。
+\BayesForGauss
+
+% define \xs \{\vec{x}_1,\ldots,\vec{x}_N\}
+% define \mn \vec{m}_N
+% define \Sn \mat{S}_N
+% define \phix \vec{\phi}(\newx)
+
+今回のケースで$\alpha, \beta, \xs, \t (= t_1, \ldots, t_N)$をまとめて$\Theta$と書くことにすれば、やりたいことは
+$ p(\w | \Theta) $ と $ p(\newt | \w, \newx, \Theta) $ から $ p(\newt | \newx, \Theta) $ を求めることである。
+
+PRML eq.3.49より
+\[ p(\w | \Theta) = \Gauss{ \w | \mn, \Sn\inv } \]
+PRML eq.3.8より
+\[ p(\newt | \w, \newx, \Theta) = \Gauss{\newt | y(\newx, \w), \beta\inv } \]
+
+ガウス分布におけるベイズの定理と見比べると、$ y(\newx, \w) = \w^T \phix$ で、これはスカラーだから転置していいので  $\A = \phix$。$\b = \vec{0}, \Lam = \beta, \L = \Sn \inv$となる。
+
+よって
+
+\[ p(\newt | \newx, \Theta) = \Gauss{\newt | \mn^T \phix, \beta\inv + \phix^T \Sn \phix}\]
+
+これでPRML eq.3.58, eq.3.59が得られた。
+% pop
+
+
+\section{ex. 3.11}
+% define SN1 S_{N+1}
+% define SN S_N
+% define xn1 x_{n+1}
+$\forall x . x^T SN1 x \le x^T SN x$を示したい。
+ex.3.8より$SN1\inv = SN\inv + \beta\phi(xn1)\phi(xn1)^T$
+\[ SN1 = (SN\inv + \beta\phi(xn1)\phi(xn1)^T) \inv \]
+
+\begin{itembox}[l]{Woodbury Identity}
+\[ (A + B D\inv C)\inv = A\inv - A\inv B (D\inv + C A\inv B)\inv C A\inv \]
+\end{itembox}
+
+$A \to SN\inv, B \to \phi(xn1), C \to \phi(xn1)^T, D \to \beta\inv$なので
+% push
+% define P \phi(xn1)
+% define Pt \phi(xn1)^T
+\[ SN1 = SN - SN P (\beta\inv + Pt SN P)\inv Pt SN \]
+$\beta$は正であり、$SN$が正定値であるから$Pt SN P$も正である。$a = (\beta\inv + Pt SN P)\inv$とおこう。
+\[ x^T SN1 x = x^T SN x - a x^T SN P Pt SN x\]
+\[ x^T SN x - x^T SN1 x = a x^T SN P Pt SN x\]
+$SN$ は対称なので
+\[ = a x^T (SN^T P Pt SN) x = a x^T (SN P) (SN P)^T x \]
+$v = SN P$ とおこう
+\begin{itembox}[l]{$vv^T$は半正定値}
+任意のベクトル$v$について$vv^T$は半正定値である。なぜなら任意のベクトル$x$について
+\[ x^T (vv^T) x = (x^Tv)(v^Tx) = (v^Tx)^T(v^Tx) = ||v^Tx||^2  \ge 0\]
+
+\end{itembox}
+
+よって与式は0以上である。
+
+\end{document}
+
+%\maketitle

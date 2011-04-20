@@ -1,0 +1,94 @@
+\documentclass[a4paper]{jsarticle}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{color}
+\usepackage{ascmac}
+
+% global commands
+\newcommand{\inv}{^{-1}}
+\newcommand{\Gauss}[1]{\mathcal{N}(#1)}
+
+% global macros
+% define \vec[1] {\bm #1}
+% define \mat[1] {\bm #1}
+
+\begin{document}
+\if0
+
+\title{PRML3.3}
+\author{サイボウズ・ラボ 西尾泰和}
+\maketitle
+\section{3.5 エビデンス近似}
+超パラメータ$\alpha, \beta$を人間が適当に決めるのとか気持ち悪いので、それもベイズ的に予測しよう。
+
+% define \eq3p49:
+\begin{itembox}[l]{eq 3.49}
+% define \mn \vec{m_N}
+% define \Sn \mat{S_N}
+% define \w \vec{w}
+% define \x \vec{x}
+% define \t \vec{t}
+\[ p(\w | \t, \x) = \Gauss{\t | \mn, \Sn}\]
+\end{itembox}
+% end
+
+% define \eq3p53:
+% define Phi \mat{\Phi}
+\begin{itembox}[l]{eq 3.53, 3.54}
+\[ \mn = \beta \Sn \Phi^T \t \]
+\[ \Sn\inv = \alpha \mat{I} + \beta \Phi^T \Phi \]
+\end{itembox}
+% end
+
+\eq3p49
+\eq3p53
+
+% define \a \alpha
+% define \b \beta
+% define \hata \hat{\a}
+% define \hatb \hat{\b}
+
+事後分布$p(\a, \b | \t)$が$\hata, \hatb$の周りでとても尖っている分布だと仮定するならば、
+% define \newt \hat{t}
+% define \newx \vec{x}_{N+1}
+予測分布$p(\newt|\t)$を$\a, \b$がそれそれ$\hata, \hatb$だと固定して計算してしまっても、だいたいあってる。つまり
+\[ p(\newt|\t) \simeq p(\newt | \t, \hata, \hatb) = \int p(\newt | \w, \hatb)p(\w | \t, \hata, \hatb) \]
+
+$\hata, \hatb$はどうやって求める？ベイズの定理より$\a, \b$の事後分布$p(\a, \b | \t) \propto p(\t | \a, \b) p(\a, \b)$。
+事前分布$p(\a, \b)$がとても平坦で定数とみなしていいんだと仮定するならば、$\hata, \hatb$は周辺尤度関数$p(\t | \a, \b)$を最大化することで求められる。
+
+(sec. 3.5.1) 周辺尤度関数$p(\t | \a, \b)$はどうやって求める？同時分布を$\w$について積分することで得られる。
+
+ \[ p(\t | \a, \b) = \myint{ p(\t | \w, b) p(\w | \a) }{w} \]
+
+この積分を計算せずに、ガウス分布についてのベイズの定理を使って導くこともできるが、それはあとで演習3.16でやるのでここでは真面目に計算する。
+
+% define \0 \vec{0}
+% define \I \mat{I}
+% define \X \mat{X}
+\fi
+PRMLの$p(\t | \w, \b)$は$p(\t | \w, \b, \X)$の$\X$が省略されていることに注意。
+
+\begin{itembox}[l]{eq. 3.10(p. 138)}
+\[ p(\t | \X, \w, \b) = \prod_n \Gauss{t_n | \w^T\phi(\x_n), \b\inv } \]
+\end{itembox}
+
+\begin{itembox}[l]{eq. 3.52(p. 152)}
+\[ p(\w | \a) = \Gauss{\w | \0, \a\inv\I }\]
+\end{itembox}
+
+ \[ p(\t | \a, \b) = \myint{\prod_n \Gauss{t_n | \w^T\phi(\x_n), \b\inv }\Gauss{\w | \0, \a\inv\I}}{w} \]
+
+\begin{itembox}[l]{$\exp$の中身に注目}
+% push
+% define \m \vec{\mu}
+% define \S \vec{\Sigma}
+$f(x) = y$を$x = \exp{-{1\over2}y}$の意味とすると:
+\[ f(\prod_n x_n) \to \sum_n f(g_n)\]
+\[ $f(\Gauss{\x | \m, \S\inv}) = (\x - \m)^T\S(\x - \m) \]
+% pop
+\end{itembox}
+
+\[ f(\ldots) = \sum_n \b (t_n - \w^T\phi(\x_n))^2  + \a \w^T\w \]
+\end{document}
+

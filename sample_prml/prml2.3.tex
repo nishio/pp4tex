@@ -1,0 +1,232 @@
+\documentclass[a4paper]{jsarticle}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{color}
+\usepackage{ascmac}
+
+% include common.tex
+% include BayesForGauss.tex
+
+\begin{document}
+
+\title{PRML2.3.1〜2.3.3}
+\author{サイボウズ・ラボ 西尾泰和}
+\maketitle
+\section{PRML2.3.1〜2.3.3ガウス分布についてのエトセトラ}
+
+ガウス分布に関する条件付き分布、周辺分布、ベイズの定理、は3章以降で何度も何度も何度も出てくるので、計算方法も含めて整理しておく。
+
+% define \x \vec{x}
+% define \m \vec{\mu}
+% define \S \vec{\Sigma}
+
+条件付き分布やガウス分布を考えるために$\x, \m, \S$をそれぞれ分割する。
+\[ \x = \vvec{\x_a}{\x_b}\]
+\[ \m = \vvec{\m_a}{\m_b}\]
+
+% define \Saa \S_{aa}
+% define \Sab \S_{ab}
+% define \Sba \S_{ba}
+% define \Sbb \S_{bb}
+\[ \S = \matt{\Saa}{\Sab}{\Sba}{\Sbb}\]
+
+% define \L \mat{\Lambda}
+共分散行列$\S$の逆行列を考えた方が式がきれいになることがあるので$\L = \S\inv$とする。
+同様に
+
+% define \Laa \L_{aa}
+% define \Lab \L_{ab}
+% define \Lba \L_{ba}
+% define \Lbb \L_{bb}
+\[ \L = \matt{\Laa}{\Lab}{\Lba}{\Lbb}\]
+
+% define \const \mathrm{const}
+
+\subsection{条件付き分布の導出}
+条件付き分布の形を調べるために$\x_b$を固定してみよう。
+\begin{itembox}[l]{次数で整理}
+\[ (\x - \m)^T \L (\x - \m) = \x^T \L \x - 2 \x^T\L\m + \const \]
+を利用して、逆に$\x$の次数で整理した2次の項の係数が$\L$, 1次の項の係数が$-2\L\m$と求める手法。
+\end{itembox}
+
+マハラノビス距離$(\x - \m)^T \L (\x - \m)$を展開して$\x_a$の次数で整理する。対称行列なので$\Lab^T = \Lba$。
+% push
+% define \f[2] (\x_#1 - \m_#1)^T \L_{#1#2} (\x_#2 - \m_#2)
+% \L#1#2 doesn't work because token concatination not supported
+\[ = \f{a}{a} \]
+\[ + \f{a}{b} \]
+\[ + \f{b}{a} \]
+\[ + \f{b}{b} \]
+% define \f[4] #1_#2^T \L_{#2#4} #3_#4
+% define \u2[1] {\color{red}\underline{\underline{{\color{black}#1}}}}
+% define \u1[1] {\color{red}\underline{{\color{black}#1}}}
+\[ = \u2{\f{\x}{a}{\x}{a}} \, \u1{- 2 \f{\x}{a}{\m}{a}} + \f{\m}{a}{\m}{a} \]
+\[ + \u1{\f{\x}{a}{\x}{b}} \, \u1{- 2 \f{\x}{a}{\m}{b}} + \f{\m}{a}{\m}{b} \]
+\[ + \u1{\f{\x}{b}{\x}{a}}        - 2 \f{\x}{b}{\m}{a}  + \f{\m}{b}{\m}{a} \]
+\[ +     \f{\x}{b}{\x}{b}         - 2 \f{\x}{b}{\m}{b}  + \f{\m}{b}{\m}{b} \]
+\[ = \u2{\f{\x}{a}{\x}{a}} \, \u1{- 2(\f{\x}{a}{\m}{a}  + \f{\x}{a}{\m}{b} - \f{\x}{a}{\x}{b})} + \const\]
+\[ = \u2{\f{\x}{a}{\x}{a}} \, \u1{ -2 \x_a^T(\Laa\m_a - (\Lab \x_b - \Lab \m_b)) } + \const \]
+% pop
+
+2次の係数は$\Laa$、1次の係数は$-2 \Laa (\m_a - \Laa\inv\Lab(\x_b - \m_b))$。よって
+\begin{itembox}[l]{ガウス分布の条件付き分布}
+$\x_b$を固定した場合の条件付き分布$\Gauss{\x_a | \m_{a|b}, \S_{a|b}\inv}$において
+\[ \S_{a|b}\inv = \Laa, \quad \m_{a|b} = \m_a - \Laa\inv\Lab(\x_b - \m_b) \]
+\end{itembox}
+が得られた。
+
+\subsection{周辺分布の導出}
+次に$\x_b$で積分することで周辺分布を求めてみよう。平方完成をして$\exp(-f(\x_b)^2)$の形に持込む。
+
+\begin{itembox}[l]{平方完成}
+$ (x - y)^2 = x^2 -2xy + y^2 $から、逆に$ x^2 - 2kx = (x - k)^2 - k^2 $を。また
+$ (\x - \m)^T \L (\x - \m) = \x^T \L \x -2 \x^T \L \m + \m^T \L \m $から、逆に$
+\x^T \L \x -2 \x^T \L \m = (\x - \m)^T \L (\x - \m) - \m^T \L \m$
+を導く方法。PRMLではガウス分布の積分消去に使われる。
+\end{itembox}
+
+まずは$\x_b$に関して整理してみる。対称性から上の$\x_a$についての整理と同じ形になるはず。
+% push
+% define \f[4] #1_#2^T \L_{#2#4} #3_#4
+% define \u2[1] {\color{red}\underline{\underline{{\color{black}#1}}}}
+% define \u1[1] {\color{red}\underline{{\color{black}#1}}}
+
+\[ (\x - \m)^T \L (\x - \m) = \u2{\f{\x}{b}{\x}{b}} \, 
+\u1{ -2 (\f{\x}{b}{\m}{b} + \f{\x}{b}{\m}{a} - \f{\x}{b}{\x}{a})} + \const\]
+\[  = \u2{\f{\x}{b}{\x}{b}} \, \u1{ -2 \x_b^T \Lbb (\m_b - \Lbb\inv\Lba(\x_a - \m_a))} + \const\]
+
+平方完成しよう。PRMLには書かれていないが一次の項の係数は先程の議論から条件付き分布の平均になるので、
+% define \mba \m_{b|a}
+$\mba = \m_b - \Lbb\inv\Lba(\x_a - \m_a)$とおけばこの式は
+\[  = \u2{\f{\x}{b}{\x}{b}} \, \u1{ -2 \x_b^T \Lbb \m_{b|a}} + \const\]
+となり、明らかに平方完成ができて
+\[  = (\x_b - \mba)^T \Lbb (\x_b - \mba) - \mba^T \Lbb \mba + \const\]
+となる。この式の前半のみが$\x_b$に依存する項である。
+
+\begin{itembox}[l]{積分消去}
+一般に$\exp$の肩に$x$に依存する部分$f(x)$と依存しない部分$g(y)$がある場合
+% push
+% define \d \mathrm{d}
+\[ \int \exp(f(x) + g(y)) \d x = \exp(g(y)) \int \exp(f(x)) \d x \propto \exp(g(y)) \]
+によって$f(x)$が消去される。多次元ガウス分布の計算では頻出。
+% pop
+\end{itembox}
+
+$\x_b$が消去できたので、残りの$g(\x_a) := \const - \mba^T \Lbb \mba$について考えよう。
+まず上記$\const$は$\x_b$で整理した場合の0次の項なので
+\[ \const =   \u2{\f{\x}{a}{\x}{a}} \, \u1{- 2 \f{\x}{a}{\m}{a}} + \f{\m}{a}{\m}{a}
+          \u1{- 2 \f{\x}{a}{\m}{b}}        + 2 \f{\m}{a}{\m}{b} +  \f{\m}{b}{\m}{b} \]
+また
+\[ \mba^T \Lbb \mba = (\m_b - \Lbb\inv\Lba(\x_a - \m_a))^T \Lbb (\m_b - \Lbb\inv\Lba(\x_a - \m_a))\]
+\[ = (\m_b^T - (\x_a - \m_a)^T\Lab\Lbb\inv) \Lbb (\m_b - \Lbb\inv\Lba(\x_a - \m_a)) \]
+\[ = \m_b^T\Lbb\m_b  -2 (\x_a - \m_a)^T \Lab \m_b + (\x_a - \m_a)^T\Lab\Lbb\inv\Lba(\x_a - \m_a) \]
+よって$g(\x_a)$を$\x_a$の次数で整理すると下のようになる。下の$\const$は上の$\const$とは違って$\x_a$の0次の項であることに注意。
+\[ g(\x_a) = \u2{\x_a^T \Laa \x_a} \,  \u1{- 2 \x_a^T \Laa \m_a} \,  \u1{- 2 \x_a \Lab \m_b}
++ \u1{2 \x_a^T \Lab \m_b} \, \u2{- \x_a^T \Lab\Lbb\inv\Lba \x_a} + \u1{2 \x_a^T \Lab\Lbb\inv\Lba \m_a} 
++ \const\]
+
+\[  = \u2{   \x_a^T \Laa \x_a - \x_a^T \Lab\Lbb\inv\Lba \x_a} \, 
+      \u1{-2(\x_a^T \Laa \m_a - \x_a^T \Lab\Lbb\inv\Lba \m_a)} 
++ \const\]
+
+
+2次の係数は$\Laa - \Lab\Lbb\inv\Lba$、1次の係数は$-2 (\Laa - \Lab\Lbb\inv\Lba) \m_a$。よって
+\begin{itembox}[l]{ガウス分布の周辺分布}
+$\x_b$を固定した場合の条件付き分布$\Gauss{\x_a | \m_{marginal}, \S_{marginal}\inv}$において
+\[ \S_{marginal}\inv = \Laa - \Lab\Lbb\inv\Lba, \quad \m_{marginal} = \m_a \]
+\end{itembox}
+が得られた。
+なお、$\S_{marginal} = \Saa$であることがブロック行列の逆行列を求めることで導出できる。
+
+% pop
+
+\subsection{ベイズの定理}
+今まで
+\[ \x = \vvec{\x_a}{\x_b}\]
+という分割されたベクトルに考えていたが、この章ではPRMLでの変更に合わせて
+% define \y \vec{y}
+% define \z \vec{z}
+\[ \z = \vvec{\x}{\y}\]
+とする。なお
+% define \Lam \mat{\Lambda}
+% define \L \mat{L}
+% define \A \mat{A}
+% define \b \vec{b}
+
+\[ p(\x) = \Gauss{\x | \m, \Lam\inv }\]
+\[ p(\y|\x) = \Gauss{\y | \A \x + \b, \L\inv }\]
+
+とする。
+\[ p(\z) = p(\x, \y) = p(\x) p(\y | \x) \]
+であるから、この分布のマハラノビス距離の部分に着目しよう。
+% define \R \mat{R}
+$\z$の精度行列を$\R$, 平均を$\m_z$とすると
+% define \qf[2] #1^T#2#1
+\[ \qf{(\z - \m_z)}{\R} = \qf{(\x - \m)}{\Lam} + \qf{(\y - \A\x - \b)}{\L} \]
+展開して次数で整理しよう。
+
+% push
+% define \Ox[1] {\color{red}\underline{{\color{black}#1}}}
+% define \Oy[1] {\color{blue}\underline{{\color{black}#1}}}
+% define \Oxx[1] \Ox{\Ox{#1}}
+% define \Oxy[1] \Ox{\Oy{#1}}
+% define \Oyx[1] \Oy{\Ox{#1}}
+% define \Oyy[1] \Oy{\Oy{#1}}
+
+\[ \Oxx{\x^T \Lam \x}  \, \Ox{- 2 \x^T \Lam \m} + \m^T \Lam \m \]
+\[ + \Oyy{\y^T \L \y} \, \Oyx{- \y^T \L \A\x} \, \Oy{- \y^T \L \b} \]
+\[ \Oxy{- \x^T\A^T \L \y} + \Oxx{\x^T\A^T \L \A\x} + \Ox{\x^T\A^T \L \b} \]
+\[ \Oy{- \b^T \L \y} + \Ox{\b^T \L \A\x} + \b^T \L \b \]
+
+よって
+\[ \qf{(\z - \m_z)}{\R} = \qf{\vvec{\x}{\y}}{\matt{\Oxx{\Lam + \A^T\L\A}}{\Oxy{-\A^T\L}}{\Oyx{-\L\A}}{\Oyy{\L}}} \]
+これで精度行列$\R$が求まった。(eq. 2.104)
+
+\begin{itembox}[l]{ブロック行列の逆行列(eq.2.76, p.85)}
+\[ \matt{A}{B}{C}{D}\inv = \matt{M}{-MBD\inv}{-D\inv CM}{D\inv+D\inv CMBD\inv}\]
+where
+\[ M = (A - BD\inv C)\inv \]
+\end{itembox}
+
+ブロック行列$R$の逆行列を求めると
+\[\R\inv = \matt{\Lam\inv}{\Lam\inv\A^T}{\A\Lam\inv}{\L\inv+\A\Lam\inv\A^T} \]
+となる。これで共分散行列が求まった。(eq. 2.105)
+
+次に1次の項に注目しよう。
+\[ \Ox{- 2 \x^T \Lam \m}  \, \Oy{- \y^T \L \b} + \Ox{\x^T\A^T \L \b} 
+   \Oy{- \b^T \L \y} + \Ox{\b^T \L \A\x} \]
+
+
+\[ - 2 \z^T\R\m_z = - 2 \vvec{x}{y}^T \vvec{\Ox{\Lam\m + \A^T\L\b}}{\Oy{\L\b}} \]
+
+よって
+
+\[ \m_z := \R\inv\vvec{\Ox{\Lam\m + \A^T\L\b}}{\Oy{\L\b}} = \vvec{\m}{\A\m + \b}  \]
+
+これで$p(\z)$の平均と共分散行列が求まった。これが求まれば後は前回の条件付き分布と周辺分布の結果を用いて
+$p(\y), p(\x|\y)$を導くことが出来る。周辺分布$p(\y)$の平均$\m_y$は$\y$部分の平均なので$\A\m + \b$, 共分散行列は全体の共分散行列の$\y$の部分を切り出した物$\L\inv+\A\Lam\inv\A^T$である。
+
+\[\R\inv = \matt{\Lam\inv}{\Lam\inv\A^T}{\A\Lam\inv}{\Oyy{\L\inv+\A\Lam\inv\A^T}} \]
+
+一方、条件付き分布の平均$\Ex{p(\x|\y)}$は$\m - \Oxx{\R_{11}}\inv \Oxy{\R_{12}}(\y - \m_y)$なので
+
+\[ R = \matt{\Oxx{\Lam + \A^T\L\A}}{\Oxy{-\A^T\L}}{\Oyx{-\L\A}}{\Oyy{\L}}\]
+より
+
+\begin{eqnarray*}
+\Ex{p(\x|\y)} 
+&=&  \m - \Oxx{\R_{11}}\inv \Oxy{\R_{12}}(\y - \m_y) \\
+&=& \m - (\Lam - \A^T\L\A)\inv \A^T\L (\y - \A\m - \b)   \\
+&=&  (\Lam - \A^T\L\A)\inv \{ -(\Lam - \A^T\L\A)\m + \A^T\L (\y - \A\m - \b) \} \\
+&=&  (\Lam - \A^T\L\A)\inv \{ \Lam\m + \A^T\L ( \A\m + \y - \A\m - \b ) \} \\
+&=&  (\Lam - \A^T\L\A)\inv \{ \Lam\m + \A^T\L (\y - \b) \} 
+\end{eqnarray*}
+
+精度行列は$\R_{11}=\Oxx{\Lam + \A^T\L\A}$である。よって下記の結果が導かれた。
+
+\BayesForGauss
+
+
+% pop
+\end{document}
+

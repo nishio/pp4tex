@@ -1,0 +1,19 @@
+% global commands
+\newcommand{\inv}{^{-1}}
+\newcommand{\Gauss}[1]{\mathcal{N}(#1)}
+\newcommand{\Ex}[1]{\mathbb{E}[#1]}
+
+\newcommand{\vvec}[2]{\begin{pmatrix} #1 \\ #2 \end{pmatrix}}
+\newcommand{\hvec}[2]{\begin{pmatrix} #1 & #2 \end{pmatrix}}
+\newcommand{\matt}[4]{\begin{pmatrix} #1 & #2 \\ #3 & #4 \end{pmatrix}}
+
+% global macros
+% define \vec[1] {\bm #1}
+% define \mat[1] {\bm #1}
+
+
+% define \Woodbury:
+\begin{itembox}[l]{Woodbury Identity}
+\[ (A + B D\inv C)\inv = A\inv - A\inv B (D\inv + C A\inv B)\inv C A\inv \]
+\end{itembox}
+% end
